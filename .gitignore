@@ -1,0 +1,8 @@
+__pycache__/
+.idea/
+opus/
+onemp3/
+twomp3/
+threemp3/
+*.mp3
+*.opus
