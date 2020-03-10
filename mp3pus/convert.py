@@ -20,33 +20,40 @@ class Target:
         self.tracktotal = None
         self.comment = None
 
-    def get_metadata(self):
-        item = mp3.MP3(self.target)
-        if item.get('TALB'):
-            self.album = " --album '{0}'".format(item.get('TALB').text[0])
-        if item.get('TCON'):
-            self.genre = " --genre '{}'".format(item.get('TCON').text[0])
-        if item.get('TIT2'):
-            self.title = " --title '{}'".format(item.get('TIT2').text[0])
-        if item.get('TPE1'):
-            self.artist = " --artist '{}'".format(item.get('TPE1').text[0])
-        if item.get('TDRC'):
-            self.date = " --date {}".format(item.get('TDRC').text[0])
-        if item.get('TRCK'):
-            track = item.get('TRCK').text[0]
+    def _get_key(self, item, tag, key):
+        attr = item.get(tag)
+        if attr:
+            return ' {0} "{1}"'.format(key, attr.text[0])
+
+    def _get_tracknum(self, item):
+        track = item.get('TRCK')
+        if track:
+            track = track.text[0]
             if track and '/' in track:
                 track = track.split('/')
                 self.tracknumber = " --comment tracknumber={}".format(track[0])
                 self.tracktotal = " --comment tracktotal={}".format(track[1])
             elif track and '/' not in track:
                 self.tracknumber = " --comment tracknumber={}".format(track)
-        if item.get('TXXX:DISCID'):
-            t = item.get('TXXX:DISCID')
-            self.comment = " --comment comment='{}'" \
-                .format(t.desc.lower() + ": " + t.text[0])
-        if item.get('COMM::XXX'):
-            self.comment = " --comment comment='{}'" \
-                .format(item.get('COMM::XXX').text[0])
+
+    def _get_comment(self, item):
+        did = item.get('TXXX:DISCID')
+        if did:
+            self.comment = " --comment comment='{}'".format(
+                did.desc + ': ' + did.text[0])
+        comm = item.get('COMM::XXX')
+        if comm:
+            self.comment = " --comment comment='{}'".format(comm.text[0])
+
+    def get_metadata(self):
+        item = mp3.MP3(self.target)
+        self.album = self._get_key(item, 'TALB', '--album')
+        self.genre = self._get_key(item, 'TCON', '--genre')
+        self.title = self._get_key(item, 'TIT2', '--title')
+        self.artist = self._get_key(item, 'TPE1', '--artist')
+        self.date = self._get_key(item, 'TDRC', '--date')
+        self._get_tracknum(item)
+        self._get_comment(item)
 
     def _get_lame(self):
         cmd = 'lame --silent --decode "{}" -'.format(self.target)
