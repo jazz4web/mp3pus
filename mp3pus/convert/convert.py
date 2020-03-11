@@ -2,7 +2,7 @@ import os
 import shlex
 import subprocess
 
-from mutagen import mp3
+from mutagen import mp3, MutagenError
 
 
 class Target:
@@ -19,6 +19,7 @@ class Target:
         self.tracknumber = None
         self.tracktotal = None
         self.comment = None
+        self.is_mp3 = None
 
     def _get_key(self, item, tag, key):
         attr = item.get(tag)
@@ -46,14 +47,19 @@ class Target:
             self.comment = " --comment comment='{}'".format(comm.text[0])
 
     def get_metadata(self):
-        item = mp3.MP3(self.target)
-        self.album = self._get_key(item, 'TALB', '--album')
-        self.genre = self._get_key(item, 'TCON', '--genre')
-        self.title = self._get_key(item, 'TIT2', '--title')
-        self.artist = self._get_key(item, 'TPE1', '--artist')
-        self.date = self._get_key(item, 'TDRC', '--date')
-        self._get_tracknum(item)
-        self._get_comment(item)
+        try:
+            item = mp3.MP3(self.target)
+            self.album = self._get_key(item, 'TALB', '--album')
+            self.genre = self._get_key(item, 'TCON', '--genre')
+            self.title = self._get_key(item, 'TIT2', '--title')
+            self.artist = self._get_key(item, 'TPE1', '--artist')
+            self.date = self._get_key(item, 'TDRC', '--date')
+            self._get_tracknum(item)
+            self._get_comment(item)
+            self.is_mp3 = True
+        except MutagenError:
+            print(
+                '{} is not mp3, passed'.format(os.path.basename(self.target)))
 
     def _get_lame(self):
         cmd = 'lame --silent --decode "{}" -'.format(self.target)

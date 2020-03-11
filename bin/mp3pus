@@ -1,44 +1,10 @@
 #!/usr/bin/env python3
 
-import argparse
-import glob
-import os
-
 from mp3pus import version
-from mp3pus.convert import Target
+from mp3pus.main import parse_args, start_the_process
+from mp3pus.system import show_error
 
-
-def parse_args():
-    args = argparse.ArgumentParser()
-    args.add_argument(
-        '-v', '--version', action='version', version=version)
-    args.add_argument(
-        '-i',
-        action='store',
-        dest='input_dir',
-        required=True,
-        help='input directory')
-    args.add_argument(
-        '-d',
-        action='store',
-        dest='output_dir',
-        required=True,
-        help='output directory')
-    args.add_argument(
-        '-o',
-        action='store',
-        dest='enc_options',
-        help='encoder options')
-    return args.parse_args()
-
-
-if __name__ == '__main__':
-    keys = parse_args()
-    template = os.path.join(os.path.realpath(keys.input_dir), '*.mp3')
-    for each in glob.glob(template):
-        target = Target(each, keys.output_dir)
-        target.get_metadata()
-        target.convert(keys.enc_options)
-        print(os.path.basename(target.target), end=' ')
-        print('->', end=' ')
-        print(os.path.basename(target.opus))
+try:
+    start_the_process(parse_args(version))
+except Exception as e:
+    show_error(e)
