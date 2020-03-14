@@ -20,6 +20,8 @@ class Target:
         self.tracktotal = None
         self.comment = None
         self.is_mp3 = None
+        self.TMP = '/tmp/mp3pus.tmp.picture'
+        self.picture = None
 
     def _get_key(self, item, tag, key):
         attr = item.get(tag)
@@ -46,7 +48,18 @@ class Target:
         if comm:
             self.comment = " --comment comment='{}'".format(comm.text[0])
 
-    def get_metadata(self):
+    def _get_picture(self, item):
+        for key in item.keys():
+            if 'APIC:' in key:
+                pic = item.get(key)
+                if pic and pic.type.real == 3:
+                    f = open(self.TMP, 'wb')
+                    f.write(pic.data)
+                    f.close()
+                    return " --picture 3||'front cover'||{}".format(
+                        self.TMP)
+
+    def get_metadata(self, picture=False):
         try:
             item = mp3.MP3(self.target)
             self.album = self._get_key(item, 'TALB', '--album')
@@ -57,6 +70,8 @@ class Target:
             self._get_tracknum(item)
             self._get_comment(item)
             self.is_mp3 = True
+            if picture:
+                self.picture = self._get_picture(item)
         except MutagenError:
             print(
                 '{} is not mp3, passed'.format(os.path.basename(self.target)))
@@ -66,7 +81,7 @@ class Target:
         return shlex.split(cmd)
 
     def _get_opus(self, options):
-        cmd = 'opusenc {0}{1}{2}{3}{4}{5}{6}{7}{8} - "{9}"'.format(
+        cmd = 'opusenc {0}{1}{2}{3}{4}{5}{6}{7}{8}{9} - "{10}"'.format(
             options or '',
             self.album or '',
             self.genre or '',
@@ -76,6 +91,7 @@ class Target:
             self.tracktotal or '',
             self.date or '',
             self.comment or '',
+            self.picture or '',
             self.opus)
         return shlex.split(cmd)
 
