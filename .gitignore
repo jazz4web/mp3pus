@@ -6,4 +6,5 @@ twomp3/
 threemp3/
 *.mp3
 *.opus
+*.wav
 mp3pus.py

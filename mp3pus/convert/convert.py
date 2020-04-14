@@ -83,6 +83,7 @@ class Target:
     def _get_opus(self, options):
         cmd = 'opusenc {0}{1}{2}{3}{4}{5}{6}{7}{8}{9} - "{10}"'.format(
             options or '',
+            self.picture or '',
             self.album or '',
             self.genre or '',
             self.title or '',
@@ -91,7 +92,6 @@ class Target:
             self.tracktotal or '',
             self.date or '',
             self.comment or '',
-            self.picture or '',
             self.opus)
         return shlex.split(cmd)
 
@@ -103,4 +103,4 @@ class Target:
                     self._get_opus(options),
                     stderr=subprocess.PIPE,
                     stdin=lame.stdout) as opus:
-            opus.wait()
+            opus.communicate()
