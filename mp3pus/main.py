@@ -41,6 +41,7 @@ def start_the_process(arguments):
     from .options import Master
     cmd = Master(arguments.enc_options)
     options = cmd.check()
+    print(options)
     template = os.path.join(os.path.realpath(arguments.input_dir), '*.mp3')
     from .convert.convert import Target
     target = None

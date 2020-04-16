@@ -29,16 +29,39 @@ class Master:
                 self.res.append('--picture')
                 self.res.append("'" + os.path.realpath(spec) + "'")
 
+    @staticmethod
+    def try_float(s):
+        try:
+            float(s)
+        except ValueError:
+            return False
+        return True
+
     def _check_bitrate(self):
         if '--bitrate' in self.ini:
             spec = self.ini[self.ini.index('--bitrate') + 1]
-            if not spec.isdecimal() or \
-                    (int(spec) < 16 or int(spec) > 256):
+            if not self.try_float(spec) or \
+                    (float(spec) < 16 or float(spec) > 256):
                 raise OSError('bad encoder options:bitrate')
             self.res.append('--bitrate')
-            self.res.append(spec)
+            self.res.append(str(round(float(spec), 3)))
+
+    def _check_downmix(self):
+        if '--downmix-mono' in self.ini:
+            self.res.append('--downmix-mono')
+
+    def _check_vbr(self):
+        if '--vbr' in self.ini:
+            self.res.append('--vbr')
+        if '--cvbr' in self.ini and '--vbr' not in self.res:
+            self.res.append('--cvbr')
+        if '--hard-cbr' in self.ini:
+            if '--vbr' not in self.res and '--cvbr' not in self.res:
+                self.res.append('--hard-cbr')
 
     def check(self):
+        self._check_downmix()
+        self._check_vbr()
         self._check_bitrate()
         self._check_picture()
         if self.res:
