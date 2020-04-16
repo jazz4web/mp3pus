@@ -40,8 +40,6 @@ def start_the_process(arguments):
         raise OSError('{} does not exist'.format(arguments.output_dir))
     from .options import Master
     cmd = Master(arguments.enc_options)
-    options = cmd.check()
-    print(options)
     template = os.path.join(os.path.realpath(arguments.input_dir), '*.mp3')
     from .convert.convert import Target
     target = None
@@ -55,6 +53,6 @@ def start_the_process(arguments):
                 print(os.path.basename(target.target), end=' ')
                 print('->', end=' ')
                 print(os.path.basename(target.opus))
-                target.convert(options)
+                target.convert(cmd.check())
     if target and os.path.exists(target.TMP):
         os.remove(target.TMP)
