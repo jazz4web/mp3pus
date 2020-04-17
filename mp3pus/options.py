@@ -41,7 +41,7 @@ class Master:
         if '--bitrate' in self.ini:
             spec = self.ini[self.ini.index('--bitrate') + 1]
             if not self.try_float(spec) or \
-                    (float(spec) < 16 or float(spec) > 256):
+                    not 16 <= float(spec) <= 256:
                 raise OSError('bad encoder options:bitrate')
             self.res.append('--bitrate')
             self.res.append(str(round(float(spec), 3)))
@@ -59,10 +59,37 @@ class Master:
             if '--vbr' not in self.res and '--cvbr' not in self.res:
                 self.res.append('--hard-cbr')
 
+    def _check_comp(self):
+        if '--comp' in self.ini:
+            spec = self.ini[self.ini.index('--comp') + 1]
+            if not spec.isdecimal() or not 0 <= int(spec) <= 10:
+                raise OSError('bad encoder options:comp')
+            self.res.append('--comp')
+            self.res.append(spec)
+
+    def _check_framesize(self):
+        if '--framesize' in self.ini:
+            spec = self.ini[self.ini.index('--framesize') + 1]
+            if spec not in ('2.5', '5', '10', '20', '40', '60'):
+                raise OSError('bad encoder options:framesize')
+            self.res.append('--framesize')
+            self.res.append(spec)
+
+    def _check_max_delay(self):
+        if '--max-delay' in self.ini:
+            spec = self.ini[self.ini.index('--max-delay') + 1]
+            if not spec.isdecimal() or not 0 <= int(spec) <= 1000:
+                raise OSError('bad encoder options:max-delay')
+            self.res.append('--max-delay')
+            self.res.append(spec)
+
     def check(self):
         self._check_downmix()
         self._check_vbr()
+        self._check_comp()
+        self._check_framesize()
         self._check_bitrate()
+        self._check_max_delay()
         self._check_picture()
         if self.res:
             return ' '.join(self.res)
