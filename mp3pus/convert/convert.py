@@ -104,3 +104,5 @@ class Target:
                     stderr=subprocess.PIPE,
                     stdin=lame.stdout) as opus:
             opus.communicate()
+        if opus.returncode:
+            raise RuntimeError('something bad happened, check encoder options')
