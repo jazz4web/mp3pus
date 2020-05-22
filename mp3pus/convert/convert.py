@@ -44,7 +44,7 @@ class Target:
         if did:
             self.comment = " --comment comment='{}'".format(
                 did.desc + ': ' + did.text[0])
-        comm = item.get('COMM::XXX')
+        comm = item.get('COMM::XXX') or item.get('COMM::eng')
         if comm:
             self.comment = " --comment comment='{}'".format(comm.text[0])
 
@@ -52,11 +52,11 @@ class Target:
         for key in item.keys():
             if 'APIC:' in key:
                 pic = item.get(key)
-                if pic and pic.type.real == 3:
+                if pic and pic.type.real in (0, 3):
                     f = open(self.TMP, 'wb')
                     f.write(pic.data)
                     f.close()
-                    return " --picture 3||'front cover'||{}".format(
+                    return " --picture \"3||front cover||{}\"".format(
                         self.TMP)
 
     def get_metadata(self, picture=False):
