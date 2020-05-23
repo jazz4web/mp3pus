@@ -16,28 +16,16 @@ class Target:
         self.title = None
         self.artist = None
         self.date = None
-        self.tracknumber = None
-        self.tracktotal = None
+        self.num = None
         self.comment = None
         self.is_mp3 = None
         self.TMP = '/tmp/mp3pus.tmp.picture'
         self.picture = None
 
-    def _get_key(self, item, tag, key):
+    def _get_key(self, item, tag, key, sep=' '):
         attr = item.get(tag)
         if attr:
-            return ' {0} "{1}"'.format(key, attr.text[0])
-
-    def _get_tracknum(self, item):
-        track = item.get('TRCK')
-        if track:
-            track = track.text[0]
-            if track and '/' in track:
-                track = track.split('/')
-                self.tracknumber = " --comment tracknumber={}".format(track[0])
-                self.tracktotal = " --comment tracktotal={}".format(track[1])
-            elif track and '/' not in track:
-                self.tracknumber = " --comment tracknumber={}".format(track)
+            return f' {key}{sep}"{attr.text[0]}"'
 
     def _get_comment(self, item):
         did = item.get('TXXX:DISCID')
@@ -67,29 +55,28 @@ class Target:
             self.title = self._get_key(item, 'TIT2', '--title')
             self.artist = self._get_key(item, 'TPE1', '--artist')
             self.date = self._get_key(item, 'TDRC', '--date')
-            self._get_tracknum(item)
+            self.num = self._get_key(
+                item, 'TRCK', '--comment tracknumber', sep='=')
             self._get_comment(item)
             self.is_mp3 = True
             if picture:
                 self.picture = self._get_picture(item)
         except MutagenError:
-            print(
-                '{} is not mp3, passed'.format(os.path.basename(self.target)))
+            print(f'{os.path.basename(self.target)} is not mp3, passed')
 
     def _get_lame(self):
         cmd = 'lame --silent --decode "{}" -'.format(self.target)
         return shlex.split(cmd)
 
     def _get_opus(self, options):
-        cmd = 'opusenc {0}{1}{2}{3}{4}{5}{6}{7}{8}{9} - "{10}"'.format(
+        cmd = 'opusenc {0}{1}{2}{3}{4}{5}{6}{7}{8} - "{9}"'.format(
             options or '',
             self.picture or '',
             self.album or '',
             self.genre or '',
             self.title or '',
             self.artist or '',
-            self.tracknumber or '',
-            self.tracktotal or '',
+            self.num or '',
             self.date or '',
             self.comment or '',
             self.opus)
