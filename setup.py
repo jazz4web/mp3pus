@@ -12,8 +12,8 @@ setup(
     zip_safe=False,
     scripts=['bin/mp3pus'],
     author='AndreyVM',
-    author_email='webmaster@auriz.ru',
+    author_email='webmaster@codej.ru',
     description='A simple mp3 to opus converter.',
     license='GNU GPLv3',
     keywords='mp3 opus converter',
-    url='https://auriz.ru/d7Po8UxK')
+    url='https://codej.ru/QjK4rbVk')
